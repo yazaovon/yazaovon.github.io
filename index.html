@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Yazao</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-base:       #0c0c0e;
+    --bg-sidebar:    #111114;
+    --bg-surface:    #17171b;
+    --bg-elevated:   #1e1e24;
+    --bg-hover:      #252530;
+    --accent:        #c0392b;
+    --accent-glow:   rgba(192, 57, 43, 0.18);
+    --accent-muted:  rgba(192, 57, 43, 0.12);
+    --accent-light:  #e05a4a;
+    --text-primary:  #f0f0f2;
+    --text-secondary:#9090a0;
+    --text-muted:    #55555f;
+    --border:        rgba(255,255,255,0.06);
+    --border-hover:  rgba(255,255,255,0.12);
+    --sidebar-w:     230px;
+    --topbar-h:      52px;
+    --radius-sm:     6px;
+    --radius-md:     10px;
+    --radius-lg:     14px;
+    --radius-xl:     20px;
+    --transition:    all 0.18s cubic-bezier(.4,0,.2,1);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ─── SHELL ─── */
+  .shell {
+    display: flex;
+    height: 100vh;
+    position: relative;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 10;
+    transition: width 0.22s cubic-bezier(.4,0,.2,1), min-width 0.22s cubic-bezier(.4,0,.2,1);
+  }
+
+  .sidebar.collapsed {
+    width: 64px;
+    min-width: 64px;
+  }
+
+  /* Mica-like noise overlay on sidebar */
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  /* ─── LOGO ─── */
+  .logo-area {
+    height: var(--topbar-h);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .logo-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 0 16px rgba(192,57,43,0.5);
+  }
+
+  .logo-icon svg { width: 16px; height: 16px; fill: #fff; }
+
+  .logo-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--text-primary);
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.15s;
+  }
+
+  .logo-text span { color: var(--accent); }
+  .sidebar.collapsed .logo-text { opacity: 0; pointer-events: none; }
+
+  /* ─── NAV ─── */
+  .nav {
+    flex: 1;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 9px 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    user-select: none;
+    color: var(--text-secondary);
+  }
+
+  .nav-item:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+
+  .nav-item.active {
+    background: var(--accent-muted);
+    color: var(--text-primary);
+  }
+
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 20%; bottom: 20%;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .nav-item.active .nav-icon { color: var(--accent-light); }
+
+  .nav-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+  }
+
+  .nav-icon svg { width: 18px; height: 18px; }
+
+  .nav-label {
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: opacity 0.15s;
+    letter-spacing: 0.01em;
+  }
+  .sidebar.collapsed .nav-label { opacity: 0; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 20px;
+    transition: opacity 0.15s;
+  }
+  .sidebar.collapsed .nav-badge { opacity: 0; }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 10px 12px 4px;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+  .sidebar.collapsed .nav-section-label { opacity: 0; }
+
+  .nav-spacer { flex: 1; }
+
+  /* ─── COLLAPSE BUTTON ─── */
+  .collapse-btn {
+    margin: 8px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: var(--transition);
+    user-select: none;
+    border: none;
+    background: transparent;
+    width: calc(100% - 16px);
+  }
+  .collapse-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
+  .collapse-btn svg { width: 18px; height: 18px; flex-shrink: 0; transition: transform 0.22s; }
+  .sidebar.collapsed .collapse-btn svg { transform: rotate(180deg); }
+  .collapse-btn span { font-size: 12.5px; font-weight: 500; white-space: nowrap; transition: opacity 0.15s; }
+  .sidebar.collapsed .collapse-btn span { opacity: 0; }
+
+  /* ─── MAIN AREA ─── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-base);
+  }
+
+  /* ─── TOP BAR ─── */
+  .topbar {
+    height: var(--topbar-h);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 12px;
+    background: var(--bg-sidebar);
+    flex-shrink: 0;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .breadcrumb .crumb-active { color: var(--text-primary); font-weight: 500; }
+  .breadcrumb svg { width: 12px; height: 12px; opacity: 0.4; }
+
+  /* ─── SEARCH ─── */
+  .search-wrap {
+    flex: 1;
+    max-width: 420px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .search-wrap svg {
+    position: absolute;
+    left: 11px;
+    top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 6px 12px 6px 34px;
+    color: var(--text-primary);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: var(--transition);
+    caret-color: var(--accent);
+  }
+
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-input:focus {
+    border-color: var(--accent);
+    background: var(--bg-hover);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  /* ─── TOPBAR ACTIONS ─── */
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary);
+    transition: var(--transition);
+    position: relative;
+  }
+  .icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .icon-btn svg { width: 17px; height: 17px; }
+
+  .notif-dot {
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 1.5px solid var(--bg-sidebar);
+  }
+
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c0392b 0%, #7d1010 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 0.04em;
+    border: 2px solid var(--border);
+    transition: var(--transition);
+    flex-shrink: 0;
+  }
+  .avatar:hover { border-color: var(--accent); }
+
+  /* ─── CONTENT ─── */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .content::-webkit-scrollbar { width: 6px; }
+  .content::-webkit-scrollbar-track { background: transparent; }
+  .content::-webkit-scrollbar-thumb { background: var(--bg-elevated); border-radius: 3px; }
+  .content::-webkit-scrollbar-thumb:hover { background: var(--bg-hover); }
+
+  /* ─── PAGE HEADER ─── */
+  .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .page-title-area {}
+
+  .page-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .page-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.03em;
+    line-height: 1;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .header-actions { display: flex; gap: 8px; }
+
+  .btn {
+    padding: 8px 18px;
+    border-radius: var(--radius-md);
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    border: none;
+    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn svg { width: 15px; height: 15px; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(192,57,43,0.35);
+  }
+  .btn-primary:hover {
+    background: var(--accent-light);
+    box-shadow: 0 4px 18px rgba(192,57,43,0.5);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+  }
+
+  /* ─── STAT CARDS ─── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .stat-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    transition: var(--transition);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-lg);
+    border: 1px solid transparent;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04), transparent) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: destination-out;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  .stat-card:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-elevated);
+    transform: translateY(-2px);
+  }
+
+  .stat-card.accent-card {
+    background: var(--accent-muted);
+    border-color: rgba(192,57,43,0.25);
+  }
+
+  .stat-label {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .stat-card.accent-card .stat-label { color: rgba(192,57,43,0.7); }
+
+  .stat-value {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+  .stat-card.accent-card .stat-value { color: #e87060; }
+
+  .stat-delta {
+    font-size: 11px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .stat-delta.up { color: #4ade80; }
+  .stat-delta.down { color: #f87171; }
+  .stat-delta svg { width: 11px; height: 11px; }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .section-link {
+    font-size: 12px;
+    color: var(--accent);
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+  }
+  .section-link:hover { color: var(--accent-light); }
+
+  /* ─── PROJECT GRID ─── */
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .project-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .project-card:hover {
+    border-color: var(--border-hover);
+    background: var(--bg-elevated);
+    transform: translateY(-2px);
+  }
+
+  .project-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .project-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .tag-active { background: rgba(74,222,128,0.12); color: #4ade80; }
+  .tag-paused { background: rgba(251,191,36,0.12); color: #fbbf24; }
+  .tag-draft  { background: rgba(148,163,184,0.1); color: #94a3b8; }
+
+  .project-menu {
+    width: 24px; height: 24px;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .project-menu:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .project-menu svg { width: 14px; height: 14px; }
+
+  .project-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+  }
+
+  .project-desc {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--bg-hover);
+    border-radius: 2px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+
+  .project-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .project-pct {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .avatar-stack { display: flex; }
+  .avatar-mini {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--bg-surface);
+    margin-left: -6px;
+    font-size: 8px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    color: #fff;
+  }
+  .avatar-mini:first-child { margin-left: 0; }
+
+  /* ─── ACTIVITY FEED ─── */
+  .feed-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .feed-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+    transition: var(--transition);
+    cursor: default;
+  }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-item:hover { background: var(--bg-elevated); }
+
+  .feed-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .feed-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .feed-text { font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+  .feed-text strong { color: var(--text-primary); font-weight: 500; }
+  .feed-time { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+
+  /* ─── TWO COL LAYOUT ─── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+  }
+
+  /* ─── QUICK ACTIONS ─── */
+  .quick-list {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .quick-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-secondary);
+  }
+  .quick-item:last-child { border-bottom: none; }
+  .quick-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+  .quick-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .quick-label { font-size: 13px; }
+  .quick-arrow { margin-left: auto; opacity: 0.4; }
+  .quick-arrow svg { width: 12px; height: 12px; }
+
+  /* ─── PAGE ANIMATIONS ─── */
+  .content-page { display: none; flex-direction: column; gap: 28px; }
+  .content-page.active { display: flex; animation: fadeUp 0.22s cubic-bezier(.4,0,.2,1) both; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── TOOLTIP-LIKE STATUS BAR ─── */
+  .statusbar {
+    height: 26px;
+    background: var(--bg-sidebar);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 18px;
+    flex-shrink: 0;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    flex-shrink: 0;
+  }
+
+  /* ─── EMPTY / ALT PAGES ─── */
+  .alt-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 16px;
+    color: var(--text-muted);
+    padding: 60px 0;
+  }
+
+  .alt-page-icon {
+    width: 56px; height: 56px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .alt-page-icon svg { width: 24px; height: 24px; }
+  .alt-page h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .alt-page p { font-size: 13px; color: var(--text-secondary); text-align: center; line-height: 1.6; max-width: 280px; }
+
+  /* ─── SETTINGS PAGE ─── */
+  .settings-group {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 20px;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-label { font-size: 13.5px; color: var(--text-primary); font-weight: 500; }
+  .settings-row-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .toggle {
+    width: 38px; height: 22px;
+    background: var(--bg-hover);
+    border-radius: 11px;
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+  .toggle.on { background: var(--accent); border-color: var(--accent); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.18s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+  .toggle.on::after { transform: translateX(16px); }
+
+  /* ─── SHOP PAGE ─── */
+  .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .shop-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: var(--transition);
+    cursor: pointer;
+  }
+  .shop-card:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-2px);
+  }
+  .shop-thumb {
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .shop-body { padding: 14px 16px; }
+  .shop-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+  .shop-price {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-light);
+  }
+
+  /* ─── ABOUT PAGE ─── */
+  .about-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+  }
+  .about-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, #7d1010 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    border: 3px solid rgba(192,57,43,0.3);
+  }
+  .about-info h2 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.03em;
+    margin-bottom: 4px;
+  }
+  .about-role {
+    font-size: 13px;
+    color: var(--accent-light);
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .about-bio { font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; }
+  .skill-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .skill-tag {
+    padding: 4px 10px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+  }
+  /* ─── GITHUB REPO CARDS ─── */
+  .gh-filter {
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Sora', sans-serif;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .gh-filter:hover { border-color: var(--border-hover); color: var(--text-secondary); }
+  .gh-filter.active { background: var(--accent-muted); border-color: rgba(192,57,43,0.4); color: var(--accent-light); }
+
+  .gh-loading {
+    grid-column: 1/-1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 48px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .gh-spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .gh-error {
+    grid-column: 1/-1;
+    padding: 32px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .repo-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    transition: var(--transition);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .repo-card:hover { border-color: var(--border-hover); background: var(--bg-elevated); transform: translateY(-2px); }
+
+  .repo-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .repo-name { font-size: 14px; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+  .repo-fork-badge {
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0.06em;
+    background: rgba(129,140,248,0.1); color: #818cf8;
+    border-radius: 3px; padding: 2px 6px; flex-shrink: 0; margin-top: 2px;
+  }
+  .repo-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; flex: 1; }
+  .repo-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .repo-lang { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-muted); }
+  .repo-lang-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .repo-stat { display: flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--text-muted); }
+  .repo-stat svg { width: 12px; height: 12px; }
+  .repo-updated { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+
+  /* ─── MUSIC PAGE ─── */
+  .music-player-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    grid-template-rows: auto auto auto;
+    gap: 16px 20px;
+    align-items: center;
+  }
+  .music-art {
+    width: 72px; height: 72px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    grid-row: 1 / 3;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    transition: var(--transition);
+  }
+  .music-art.playing { border-color: rgba(192,57,43,0.4); animation: pulse-art 2s ease-in-out infinite; }
+  @keyframes pulse-art { 0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0.15)} 50%{box-shadow:0 0 0 8px rgba(192,57,43,0)} }
+
+  .music-now { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+  .music-title { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; color: #fff; letter-spacing: 0.02em; }
+  .music-artist { font-size: 12.5px; color: var(--text-secondary); }
+
+  .music-controls { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .music-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: var(--transition);
+  }
+  .music-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-hover); }
+  .music-btn svg { width: 16px; height: 16px; }
+  .play-btn { width: 42px; height: 42px; background: var(--accent); border-color: var(--accent); color: #fff; }
+  .play-btn:hover { background: var(--accent-light); border-color: var(--accent-light); }
+  .play-btn svg { width: 20px; height: 20px; }
+
+  .music-progress-wrap {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .music-time { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; min-width: 30px; }
+  .music-bar {
+    flex: 1; height: 4px;
+    background: var(--bg-hover);
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .music-bar-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 1s linear; }
+
+  .music-volume-wrap {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .volume-slider { flex: 1; max-width: 160px; height: 3px; }
+
+  /* playlist track item reuses feed-item */
+  .track-item { cursor: pointer; }
+  .track-item.active { background: var(--accent-muted) !important; }
+  .track-item.active .track-name { color: var(--accent-light); }
+  .track-num { font-size: 11px; color: var(--text-muted); min-width: 16px; text-align: center; }
+  .track-name { font-size: 13px; color: var(--text-secondary); flex: 1; }
+  .track-dur { font-size: 11px; color: var(--text-muted); }
+
+  .genre-chip {
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+  }
+  .genre-chip:hover { opacity: 0.8; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="logo-area">
+      <div class="logo-icon">
+        <svg viewBox="0 0 16 16"><path d="M8 1C4.7 1 2 3.7 2 7c0 2.1 1.1 4 2.7 5.1V13a1 1 0 001 1h4.6a1 1 0 001-1v-.9C12.9 11 14 9.1 14 7c0-3.3-2.7-6-6-6zm-1 11v-1h2v1H7zm3.7-3.3l-.7.4V10H6v-.9l-.7-.4A4 4 0 014 7c0-2.2 1.8-4 4-4s4 1.8 4 4a4 4 0 01-1.3 2.7z"/></svg>
+      </div>
+      <div class="logo-text">YAZ<span>AO</span></div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section-label">Main</div>
+
+      <div class="nav-item active" onclick="setPage('home', this)">
+        <div class="nav-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h4a1 1 0 001-1v-3h2v3a1 1 0 001 1h4a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        </div>
+        <span class="nav-label">Home</span>
+      </div>
+
+      <div class="nav-item" onclick="setPage('project', this)">
+        <div class="nav-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/></svg>
+        </div>
+        <span class="nav-label">Project</span>
+        <span class="nav-badge">4</span>
+      </div>
+
+      <div class="nav-item" onclick="setPage('shop', this)">
+        <div class="nav-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z"/><path d="M16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg>
+        </div>
+        <span class="nav-label">Shop</span>
+      </div>
+
+      <div class="nav-section-label">Personal</div>
+
+      <div class="nav-item" onclick="setPage('about', this)">
+        <div class="nav-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+        </div>
+        <span class="nav-label">About Me</span>
+      </div>
+
+      <div class="nav-item" onclick="setPage('music', this)">
+        <div class="nav-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/></svg>
+        </div>
+        <span class="nav-label">Music</span>
+      </div>
+
+      <div class="nav-spacer"></div>
+
+      <div class="nav-item" onclick="setPage('settings', this)">
+        <div class="nav-icon">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+        </div>
+        <span class="nav-label">Settings</span>
+      </div>
+    </nav>
+
+    <button class="collapse-btn" onclick="toggleSidebar()">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
+      <span>Collapse</span>
+    </button>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <div class="main">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span>Yazao</span>
+        <svg viewBox="0 0 12 12" fill="currentColor"><path d="M4.5 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+        <span class="crumb-active" id="breadcrumb-label">Home</span>
+      </div>
+
+      <div class="search-wrap">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+        <input class="search-input" type="text" placeholder="Search anything..." id="search-input" />
+      </div>
+
+      <div class="topbar-actions">
+        <button class="icon-btn" title="Command palette" onclick="focusSearch()">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16A8 8 0 0010 2zM8 7a1 1 0 012 0v4a1 1 0 01-2 0V7zm1-3a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/></svg>
+        </button>
+        <button class="icon-btn" title="Notifications">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+        <div class="avatar" title="Profile">YZ</div>
+      </div>
+    </div>
+
+    <!-- SCROLL AREA -->
+    <div class="content">
+
+      <!-- ═══ HOME PAGE ═══ -->
+      <div class="content-page active" id="page-home">
+        <div class="page-header">
+          <div class="page-title-area">
+            <div class="page-eyebrow">Dashboard</div>
+            <div class="page-title">Home</div>
+            <div class="page-subtitle">Welcome back — here's what's happening today.</div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+              Export
+            </button>
+            <button class="btn btn-primary">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+              New Project
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card accent-card">
+            <div class="stat-label">Active Projects</div>
+            <div class="stat-value">12</div>
+            <div class="stat-delta up">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4 4H7v4H5V6H2z"/></svg>
+              +3 this week
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value">$84.2K</div>
+            <div class="stat-delta up">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4 4H7v4H5V6H2z"/></svg>
+              +12.4%
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Team Members</div>
+            <div class="stat-value">38</div>
+            <div class="stat-delta down">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 10L2 6h3V2h2v4h3z"/></svg>
+              -2 this month
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Tasks Done</div>
+            <div class="stat-value">247</div>
+            <div class="stat-delta up">
+              <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 2l4 4H7v4H5V6H2z"/></svg>
+              89% on time
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="section-header">
+              <div class="section-title">Recent Activity</div>
+              <a class="section-link">View all</a>
+            </div>
+            <div class="feed-card">
+              <div class="feed-item">
+                <div class="feed-dot" style="background:#4ade80"></div>
+                <div class="feed-body">
+                  <div class="feed-text"><strong>Axiom UI Kit</strong> was marked as completed</div>
+                  <div class="feed-time">2m ago</div>
+                </div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot" style="background:var(--accent)"></div>
+                <div class="feed-body">
+                  <div class="feed-text"><strong>Nova Dashboard</strong> — new commit pushed</div>
+                  <div class="feed-time">18m ago</div>
+                </div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot" style="background:#fbbf24"></div>
+                <div class="feed-body">
+                  <div class="feed-text"><strong>3 invoices</strong> are awaiting approval</div>
+                  <div class="feed-time">1h ago</div>
+                </div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot" style="background:#818cf8"></div>
+                <div class="feed-body">
+                  <div class="feed-text"><strong>Sarah K.</strong> joined the DeathHQ workspace</div>
+                  <div class="feed-time">3h ago</div>
+                </div>
+              </div>
+              <div class="feed-item">
+                <div class="feed-dot" style="background:var(--text-muted)"></div>
+                <div class="feed-body">
+                  <div class="feed-text"><strong>Ghost Theme v2</strong> — design review scheduled</div>
+                  <div class="feed-time">Yesterday</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-header">
+              <div class="section-title">Quick Actions</div>
+            </div>
+            <div class="quick-list">
+              <div class="quick-item">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+                <span class="quick-label">Create new project</span>
+                <div class="quick-arrow"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3L7.5 6l-3 3"/></svg></div>
+              </div>
+              <div class="quick-item">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+                <span class="quick-label">Send invite</span>
+                <div class="quick-arrow"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3L7.5 6l-3 3"/></svg></div>
+              </div>
+              <div class="quick-item">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                <span class="quick-label">Export report</span>
+                <div class="quick-arrow"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3L7.5 6l-3 3"/></svg></div>
+              </div>
+              <div class="quick-item">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg>
+                <span class="quick-label">Manage team</span>
+                <div class="quick-arrow"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 3L7.5 6l-3 3"/></svg></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ PROJECT PAGE ═══ -->
+      <div class="content-page" id="page-project">
+        <div class="page-header">
+          <div class="page-title-area">
+            <div class="page-eyebrow">GitHub — yazaovon</div>
+            <div class="page-title">Project</div>
+            <div class="page-subtitle" id="gh-subtitle">Fetching repositories...</div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" onclick="loadRepos()">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/></svg>
+              Refresh
+            </button>
+            <a class="btn btn-primary" href="https://github.com/yazaovon" target="_blank">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd"/></svg>
+              View on GitHub
+            </a>
+          </div>
+        </div>
+
+        <div id="gh-filter-bar" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="gh-filter active" data-lang="all" onclick="filterRepos('all',this)">All</button>
+        </div>
+
+        <div class="project-grid" id="gh-repo-grid">
+          <div class="gh-loading">
+            <div class="gh-spinner"></div>
+            <span>Loading repositories from GitHub...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SHOP PAGE ═══ -->
+      <div class="content-page" id="page-shop">
+        <div class="page-header">
+          <div class="page-title-area">
+            <div class="page-eyebrow">Marketplace</div>
+            <div class="page-title">Shop</div>
+            <div class="page-subtitle">Premium templates, kits, and tools.</div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary">All Categories</button>
+          </div>
+        </div>
+
+        <div class="shop-grid">
+          <div class="shop-card">
+            <div class="shop-thumb" style="background:#1a0a0a; color:var(--accent)">SK</div>
+            <div class="shop-body">
+              <div class="shop-name">Skull UI Kit</div>
+              <div class="shop-price">$49</div>
+            </div>
+          </div>
+          <div class="shop-card">
+            <div class="shop-thumb" style="background:#0a0a1a; color:#818cf8">ND</div>
+            <div class="shop-body">
+              <div class="shop-name">Nova Dashboard Pro</div>
+              <div class="shop-price">$129</div>
+            </div>
+          </div>
+          <div class="shop-card">
+            <div class="shop-thumb" style="background:#0a1a10; color:#4ade80">GT</div>
+            <div class="shop-body">
+              <div class="shop-name">Ghost Theme Pack</div>
+              <div class="shop-price">$39</div>
+            </div>
+          </div>
+          <div class="shop-card">
+            <div class="shop-thumb" style="background:#1a1400; color:#fbbf24">BL</div>
+            <div class="shop-body">
+              <div class="shop-name">Blade Icon Set</div>
+              <div class="shop-price">$19</div>
+            </div>
+          </div>
+          <div class="shop-card">
+            <div class="shop-thumb" style="background:#130a1a; color:#e879f9">RP</div>
+            <div class="shop-body">
+              <div class="shop-name">Reaper Plugin Bundle</div>
+              <div class="shop-price">$79</div>
+            </div>
+          </div>
+          <div class="shop-card">
+            <div class="shop-thumb" style="background:#0f1a1a; color:#22d3ee">DK</div>
+            <div class="shop-body">
+              <div class="shop-name">DarkKit Starter</div>
+              <div class="shop-price">Free</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ABOUT PAGE ═══ -->
+      <div class="content-page" id="page-about">
+        <div class="page-header">
+          <div class="page-title-area">
+            <div class="page-eyebrow">Profile</div>
+            <div class="page-title">About Me</div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary">Edit Profile</button>
+          </div>
+        </div>
+
+        <div class="about-card">
+          <div class="about-avatar">YM</div>
+          <div class="about-info">
+            <h2>YAZAO VON MAXIMUS</h2>
+            <div class="about-role">Lead Designer & Developer</div>
+            <div class="about-bio">
+              Building dark, fast, and purposeful digital experiences. Obsessed with the intersection of raw aesthetics and precise engineering. Based somewhere between the terminal and the design canvas — crafting tools that feel alive.
+            </div>
+            <div class="skill-tags">
+              <span class="skill-tag">WinUI 3</span>
+              <span class="skill-tag">React</span>
+              <span class="skill-tag">TypeScript</span>
+              <span class="skill-tag">C#</span>
+              <span class="skill-tag">Figma</span>
+              <span class="skill-tag">Motion Design</span>
+              <span class="skill-tag">Dark UI</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-header">
+            <div class="section-title">Recent Work</div>
+          </div>
+          <div class="project-grid">
+            <div class="project-card">
+              <div class="project-name" style="margin-bottom:6px">Axiom UI Kit</div>
+              <div class="project-desc">Enterprise-grade component library.</div>
+            </div>
+            <div class="project-card">
+              <div class="project-name" style="margin-bottom:6px">Nova Dashboard</div>
+              <div class="project-desc">Analytics hub with real-time data.</div>
+            </div>
+            <div class="project-card">
+              <div class="project-name" style="margin-bottom:6px">Skull Themes</div>
+              <div class="project-desc">Dark-only publication themes.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ MUSIC PAGE ═══ -->
+      <div class="content-page" id="page-music">
+        <div class="page-header">
+          <div class="page-title-area">
+            <div class="page-eyebrow">YouTube Music</div>
+            <div class="page-title">Music</div>
+            <div class="page-subtitle">Your personal playlist — live from YouTube.</div>
+          </div>
+          <div class="header-actions">
+            <a class="btn btn-secondary" href="https://music.youtube.com/playlist?list=PLmjH3sJnWUNAP3T8413aNT-z9pAlzYktg" target="_blank">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/></svg>
+              Open in YT Music
+            </a>
+          </div>
+        </div>
+
+        <div class="yt-player-shell">
+          <div class="yt-player-wrap" id="yt-player-wrap">
+            <div id="yt-player"></div>
+          </div>
+
+          <div class="yt-sidebar">
+            <div class="yt-now-card" id="yt-now-card">
+              <div class="yt-thumb-wrap">
+                <img id="yt-thumb" src="" alt="thumbnail" />
+                <div class="yt-thumb-overlay">
+                  <div class="yt-eq" id="yt-eq">
+                    <span></span><span></span><span></span><span></span>
+                  </div>
+                </div>
+              </div>
+              <div class="yt-now-info">
+                <div class="yt-now-label">Now Playing</div>
+                <div class="yt-now-title" id="yt-now-title">Loading playlist...</div>
+                <div class="yt-now-channel" id="yt-now-channel">—</div>
+              </div>
+            </div>
+
+            <div class="yt-track-list" id="yt-track-list">
+              <div class="yt-track-loading">
+                <div class="gh-spinner"></div>
+                <span>Loading tracks...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SETTINGS PAGE ═══ -->
+      <div class="content-page" id="page-settings">
+        <div class="page-header">
+          <div class="page-title-area">
+            <div class="page-eyebrow">Preferences</div>
+            <div class="page-title">Settings</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-header"><div class="section-title">Appearance</div></div>
+          <div class="settings-group">
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Dark Mode</div>
+                <div class="settings-row-desc">Always keep the interface in dark mode</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Mica Material Effect</div>
+                <div class="settings-row-desc">Translucent sidebar using WinUI acrylic</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Compact Mode</div>
+                <div class="settings-row-desc">Reduce padding and element sizing</div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-header"><div class="section-title">Notifications</div></div>
+          <div class="settings-group">
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Push Notifications</div>
+                <div class="settings-row-desc">Receive alerts for project updates</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Sound Effects</div>
+                <div class="settings-row-desc">Play sounds on action completion</div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-header"><div class="section-title">Account</div></div>
+          <div class="settings-group">
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Two-Factor Authentication</div>
+                <div class="settings-row-desc">Add an extra layer of security</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">API Access</div>
+                <div class="settings-row-desc">Enable external API integrations</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- STATUS BAR -->
+    <div class="statusbar">
+      <div class="status-item">
+        <div class="status-dot"></div>
+        All systems operational
+      </div>
+      <div class="status-item">Yazao v2.1.0</div>
+      <div class="status-item" id="status-time"></div>
+    </div>
+
+  </div><!-- /main -->
+</div>
+
+<script>
+  const pages = { home: 'Home', project: 'Project', shop: 'Shop', about: 'About Me', music: 'Music', settings: 'Settings' };
+
+  function setPage(key, el) {
+    document.querySelectorAll('.content-page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + key).classList.add('active');
+    el.classList.add('active');
+    document.getElementById('breadcrumb-label').textContent = pages[key];
+    if (key === 'project' && !window._reposLoaded) loadRepos();
+  }
+
+  function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+  function focusSearch() { document.getElementById('search-input').focus(); }
+
+  function tick() {
+    const d = new Date();
+    document.getElementById('status-time').textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  tick(); setInterval(tick, 1000);
+
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); focusSearch(); }
+  });
+
+  /* ─── GITHUB REPOS ─── */
+  const LANG_COLORS = {
+    JavaScript:'#f1e05a', TypeScript:'#3178c6', Python:'#3572A5', HTML:'#e34c26',
+    CSS:'#563d7c', 'C#':'#178600', Java:'#b07219', Go:'#00ADD8', Rust:'#dea584',
+    Vue:'#41b883', Shell:'#89e051', Ruby:'#701516', PHP:'#4F5D95', Kotlin:'#A97BFF',
+    Dart:'#00B4AB', Swift:'#F05138', 'C++':'#f34b7d', C:'#555555',
+  };
+  let allRepos = [], activeFilter = 'all';
+
+  async function loadRepos() {
+    const grid = document.getElementById('gh-repo-grid');
+    const sub  = document.getElementById('gh-subtitle');
+    grid.innerHTML = '<div class="gh-loading"><div class="gh-spinner"></div><span>Fetching from GitHub...</span></div>';
+    window._reposLoaded = true;
+    try {
+      const r = await fetch('https://api.github.com/users/yazaovon/repos?sort=updated&per_page=30');
+      if (!r.ok) throw new Error('GitHub API ' + r.status);
+      allRepos = await r.json();
+      sub.textContent = allRepos.length + ' repositories · last updated ' + timeAgo(allRepos[0]?.updated_at);
+      const badge = document.querySelector('.nav-badge');
+      if (badge) badge.textContent = allRepos.length;
+      buildFilters();
+      renderRepos(allRepos);
+    } catch(e) {
+      grid.innerHTML = '<div class="gh-error">Could not load repositories.<br><small>' + e.message + '</small></div>';
+    }
+  }
+
+  function buildFilters() {
+    const langs = [...new Set(allRepos.map(r => r.language).filter(Boolean))].slice(0, 8);
+    const bar = document.getElementById('gh-filter-bar');
+    bar.innerHTML = '<button class="gh-filter active" data-lang="all" onclick="filterRepos(\'all\',this)">All</button>';
+    langs.forEach(l => {
+      const btn = document.createElement('button');
+      btn.className = 'gh-filter';
+      btn.textContent = l;
+      btn.onclick = function(){ filterRepos(l, this); };
+      bar.appendChild(btn);
+    });
+  }
+
+  function filterRepos(lang, btn) {
+    activeFilter = lang;
+    document.querySelectorAll('.gh-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filtered = lang === 'all' ? allRepos : allRepos.filter(r => r.language === lang);
+    renderRepos(filtered);
+  }
+
+  function renderRepos(repos) {
+    const grid = document.getElementById('gh-repo-grid');
+    if (!repos.length) { grid.innerHTML = '<div class="gh-error">No repositories found.</div>'; return; }
+    grid.innerHTML = repos.map(repo => {
+      const lang = repo.language || '';
+      const dot  = lang && LANG_COLORS[lang] ? `<span class="repo-lang-dot" style="background:${LANG_COLORS[lang]}"></span>` : '';
+      return `<a class="repo-card" href="${repo.html_url}" target="_blank">
+        <div class="repo-card-top">
+          <div class="repo-name">${repo.name}</div>
+          ${repo.fork ? '<span class="repo-fork-badge">Fork</span>' : ''}
+        </div>
+        <div class="repo-desc">${repo.description || 'No description provided.'}</div>
+        <div class="repo-meta">
+          ${lang ? `<div class="repo-lang">${dot}<span>${lang}</span></div>` : ''}
+          <div class="repo-stat">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            ${repo.stargazers_count}
+          </div>
+          <div class="repo-stat">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.707 3.293a1 1 0 010 1.414L5.414 7H11a7 7 0 017 7v2a1 1 0 11-2 0v-2a5 5 0 00-5-5H5.414l2.293 2.293a1 1 0 11-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            ${repo.forks_count}
+          </div>
+          <div class="repo-updated">${timeAgo(repo.updated_at)}</div>
+        </div>
+      </a>`;
+    }).join('');
+  }
+
+  function timeAgo(iso) {
+    if (!iso) return '';
+    const diff = Date.now() - new Date(iso).getTime();
+    const d = Math.floor(diff / 86400000);
+    if (d === 0) return 'today';
+    if (d === 1) return 'yesterday';
+    if (d < 30) return d + 'd ago';
+    if (d < 365) return Math.floor(d/30) + 'mo ago';
+    return Math.floor(d/365) + 'y ago';
+  }
+
+  /* ─── MUSIC PLAYER ─── */
+  const tracks = [
+    { title: 'Midnight Run',   artist: 'Yazao von Maximus', duration: 208, color: '#c0392b' },
+    { title: 'Void Signal',    artist: 'Yazao von Maximus', duration: 195, color: '#818cf8' },
+    { title: 'Dark Frequency', artist: 'Yazao von Maximus', duration: 231, color: '#4ade80' },
+    { title: 'Neon Grave',     artist: 'Yazao von Maximus', duration: 187, color: '#fbbf24' },
+    { title: 'Reaper Wave',    artist: 'Yazao von Maximus', duration: 244, color: '#22d3ee' },
+    { title: 'Phantom Pulse',  artist: 'Yazao von Maximus', duration: 172, color: '#e879f9' },
+  ];
+  let currentTrack = 0, isPlaying = false, elapsed = 0, timer = null;
+
+  function fmt(s) { return Math.floor(s/60) + ':' + String(Math.floor(s%60)).padStart(2,'0'); }
+
+  function buildPlaylist() {
+    const c = document.getElementById('playlist-container');
+    c.innerHTML = tracks.map((t,i) => `
+      <div class="feed-item track-item${i===0?' active':''}" onclick="selectTrack(${i})" id="track-${i}">
+        <div class="track-num">${i+1}</div>
+        <div class="track-name">${t.title}</div>
+        <div class="track-dur">${fmt(t.duration)}</div>
+      </div>`).join('');
+  }
+
+  function selectTrack(i) {
+    currentTrack = i; elapsed = 0;
+    document.querySelectorAll('.track-item').forEach((el,j) => el.classList.toggle('active', j===i));
+    updatePlayerUI();
+    if (isPlaying) { clearInterval(timer); startTimer(); }
+    else { setPlaying(true); }
+  }
+
+  function updatePlayerUI() {
+    const t = tracks[currentTrack];
+    document.getElementById('music-title').textContent = t.title;
+    document.getElementById('music-artist').textContent = t.artist;
+    document.getElementById('music-duration').textContent = fmt(t.duration);
+    document.getElementById('music-elapsed').textContent = fmt(elapsed);
+    document.getElementById('music-bar-fill').style.width = (elapsed/t.duration*100).toFixed(1)+'%';
+    document.getElementById('music-art').style.background = t.color + '22';
+    document.getElementById('music-art').style.borderColor = t.color + '55';
+  }
+
+  function setPlaying(state) {
+    isPlaying = state;
+    document.getElementById('play-icon').style.display = state ? 'none' : '';
+    document.getElementById('pause-icon').style.display = state ? '' : 'none';
+    document.getElementById('music-art').classList.toggle('playing', state);
+    if (state) startTimer(); else clearInterval(timer);
+  }
+
+  function startTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => {
+      const t = tracks[currentTrack];
+      elapsed = Math.min(elapsed + 1, t.duration);
+      updatePlayerUI();
+      if (elapsed >= t.duration) nextTrack();
+    }, 1000);
+  }
+
+  function togglePlay() { setPlaying(!isPlaying); }
+  function nextTrack() { currentTrack = (currentTrack+1) % tracks.length; elapsed = 0; document.querySelectorAll('.track-item').forEach((el,j)=>el.classList.toggle('active',j===currentTrack)); updatePlayerUI(); if(isPlaying){clearInterval(timer);startTimer();} }
+  function prevTrack() { currentTrack = (currentTrack-1+tracks.length) % tracks.length; elapsed = 0; document.querySelectorAll('.track-item').forEach((el,j)=>el.classList.toggle('active',j===currentTrack)); updatePlayerUI(); if(isPlaying){clearInterval(timer);startTimer();} }
+  function seekTrack(e, bar) { const rect=bar.getBoundingClientRect(); const pct=(e.clientX-rect.left)/rect.width; elapsed=Math.floor(pct*tracks[currentTrack].duration); updatePlayerUI(); }
+
+  buildPlaylist();
+  updatePlayerUI();
+</script>
+</body>
+</html>
